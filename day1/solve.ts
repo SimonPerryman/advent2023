@@ -1,43 +1,64 @@
-import { forEach, keys, map, sum, toPairs, values } from 'lodash';
 import { parseLines, solve } from '../utils/typescript';
 
-function toNumber(line: string) {
-  const justNumbers = line.replace(/[^0-9]/g, '');
-  const characters = justNumbers.split('');
-  return parseInt(`${characters[0]}${characters.last}`, 10);
-}
-
 function part1(_input: string[]) {
-  return sum(map(_input, toNumber));
+  return _input.map(part1SolveForOneLine).reduce((a, b) => a + b, 0);
 }
 
-const numbers = {
-  one: 1,
-  two: 2,
-  three: 3,
-  four: 4,
-  five: 5,
-  six: 6,
-  seven: 7,
-  eight: 8,
-  nine: 9,
-};
-const regexStr = `(${keys(numbers).join('|')}|${values(numbers).join('|')})`;
-const startRegex = new RegExp(regexStr);
-const endRegex = new RegExp(`.*${regexStr}`);
-
-function toDigit(value: string) {
-  return numbers[value] || value;
+function part1SolveForOneLine(line: string) {
+  const sanitisedLine = sanitiseLine(line);
+  const [first, last] = extractFirstAndLastNumber(sanitisedLine);
+  return convertToNumber(first + last)
 }
 
-function toAdvancedNumber(input: string) {
-  const firstMatch = input.match(startRegex)[1];
-  const lastMatch = input.match(endRegex)[1];
-  return parseInt(`${toDigit(firstMatch)}${toDigit(lastMatch)}`);
+function removeEverythingButNumbers(line: string): string {
+  return line.replace(/[^0-9]/g, '');
+}
+
+function convertNumberAsWordToNumber(numberAsWord: string): string {
+  switch(numberAsWord) {
+    case 'one': return '1';
+    case 'two': return '2';
+    case 'three': return '3';
+    case 'four': return '4';
+    case 'five': return '5';
+    case 'six': return '6';
+    case 'seven': return '7';
+    case 'eight': return '8' ;
+    case 'nine': return '9'
+    default:
+      throw new Error("This better not go over 9, I don't want to think of a smarter way of doing this")
+   }
+}
+
+function replaceAllNumbersAsWords(line: string): string {
+  return line.replaceAll(/one|two|three|four|five|six|seven|eight|nine/g, convertNumberAsWordToNumber);
+}
+
+function sanitiseLine(line: string): string {
+  let sanitisedLine =  line.toLowerCase();
+  sanitisedLine = replaceAllNumbersAsWords(sanitisedLine)
+  return removeEverythingButNumbers(sanitisedLine);
+}
+
+
+function convertToNumber(numberAsString: string): number {
+  return parseInt(numberAsString, 10);
+}
+
+function extractFirstAndLastNumber(line: string): [string, string] {
+  if(line.length === 0) return ["0", "0"];
+
+  return [line[0], line.at(-1)];
+}
+
+function part2SolveForOneLine(line: string): number {
+  const sanitisedLine = sanitiseLine(line);
+  const [first, last] = extractFirstAndLastNumber(sanitisedLine);
+  return convertToNumber(first + last)
 }
 
 function part2(_input: string[]) {
-  return sum(map(_input, toAdvancedNumber));
+  return _input.map(part2SolveForOneLine).reduce((a, b) => a + b, 0);
 }
 
 solve({ part1, test1: 142, part2, test2: 281, parser: parseLines() });
